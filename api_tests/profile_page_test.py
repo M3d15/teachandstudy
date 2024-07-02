@@ -31,3 +31,22 @@ def test_change_user_data(base_api_url, access_token):
     assert json_random_data['last_name'] == response_changed_data['last_name']
     assert json_random_data['patronymic'] == response_changed_data['patronymic']
     assert json_random_data['phone'] == response_changed_data['phone']
+
+
+def test_change_users_password(base_api_url, access_token, credentials):
+    path = "/api/v1/auth/users/set_password/"
+
+    password = '1qwe2qaz'
+    
+    changed_user_password_response = requests.post(url=base_api_url + path, 
+                                 headers={'Authorization': access_token['Authorization']}, 
+                                 json={'current_password': credentials['password'], 'new_password': password, 
+                                 're_new_password': password})
+    
+    assert changed_user_password_response.status_code == 204
+
+    token_response = requests.post(url=base_api_url + "/api/v1/auth/jwt/create/", json={"username": "test@ya.ru", "password": password},
+                         verify=False)
+    
+    assert token_response.status_code == 200
+    
