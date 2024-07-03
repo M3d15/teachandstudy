@@ -15,6 +15,19 @@ def test_courses_list(base_api_url, access_token):
         assert len(json_courses_list_data.get('results')) == courses_number
 
 
+def test_course_categories_list(base_api_url, access_token):
+    path = "/api/v1/category/"
+
+    course_categories_response = requests.get(url=base_api_url + path, 
+                                 headers={'Authorization': access_token.get('Authorization')})
+    
+    assert course_categories_response.status_code == 200
+    json_course_categories_data = course_categories_response.json()
+
+    if len(json_course_categories_data) > 0:
+        assert json_course_categories_data != []
+
+
 def test_courses_search(base_api_url, access_token):
     path = "/api/v1/courses/"
 
