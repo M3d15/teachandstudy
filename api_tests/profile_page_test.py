@@ -5,13 +5,13 @@ def test_user_me(base_api_url, access_token, credentials):
     path = "/api/v1/auth/users/me/"
 
     user_me_response = requests.get(url=base_api_url + path, 
-                                 headers={'Authorization': access_token['Authorization']})
+                                 headers={'Authorization': access_token.get('Authorization')})
     
     json_user_me_data = user_me_response.json()
 
     assert user_me_response.status_code == 200
     assert json_user_me_data != {}
-    assert credentials['username'] == json_user_me_data['username']
+    assert credentials.get('username') == json_user_me_data.get('username')
 
 
 def test_change_user_data(base_api_url, access_token):
@@ -20,17 +20,17 @@ def test_change_user_data(base_api_url, access_token):
     json_random_data = random_name()
     
     changed_user_data_response = requests.patch(url=base_api_url + path, 
-                                 headers={'Authorization': access_token['Authorization']}, 
-                                 json={'first_name': json_random_data['first_name'], 'last_name': json_random_data['last_name'], 
-                                 'patronymic': json_random_data['patronymic'], 'phone': json_random_data['phone']})
+                                 headers={'Authorization': access_token.get('Authorization')}, 
+                                 json={'first_name': json_random_data.get('first_name'), 'last_name': json_random_data.get('last_name'), 
+                                 'patronymic': json_random_data.get('patronymic'), 'phone': json_random_data.get('phone')})
     response_changed_data = changed_user_data_response.json()
 
     assert changed_user_data_response.status_code == 200
     assert changed_user_data_response != {}
-    assert json_random_data['first_name'] == response_changed_data['first_name']
-    assert json_random_data['last_name'] == response_changed_data['last_name']
-    assert json_random_data['patronymic'] == response_changed_data['patronymic']
-    assert json_random_data['phone'] == response_changed_data['phone']
+    assert json_random_data.get('first_name') == response_changed_data.get('first_name')
+    assert json_random_data.get('last_name') == response_changed_data.get('last_name')
+    assert json_random_data.get('patronymic') == response_changed_data.get('patronymic')
+    assert json_random_data.get('phone') == response_changed_data.get('phone')
 
 
 def test_change_users_password(base_api_url, access_token, credentials):
@@ -39,8 +39,8 @@ def test_change_users_password(base_api_url, access_token, credentials):
     password = '1qwe2qaz'
     
     changed_user_password_response = requests.post(url=base_api_url + path, 
-                                 headers={'Authorization': access_token['Authorization']}, 
-                                 json={'current_password': credentials['password'], 'new_password': password, 
+                                 headers={'Authorization': access_token.get('Authorization')}, 
+                                 json={'current_password': credentials.get('password'), 'new_password': password, 
                                  're_new_password': password})
     
     assert changed_user_password_response.status_code == 204

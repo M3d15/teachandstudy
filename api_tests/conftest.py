@@ -16,7 +16,7 @@ def access_token(base_api_url, credentials):
     assert token_response.status_code == 200
     json_token_data = token_response.json()
     
-    return {"Authorization": f"Bearer {json_token_data['access']}"}
+    return {"Authorization": f"Bearer {json_token_data.get('access')}"}
 
 
 @pytest.fixture()
