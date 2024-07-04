@@ -116,3 +116,34 @@ def test_filter_courses_by_category(base_api_url, access_token):
     if len(json_filter_courses_by_category_data.get('results')) > 0 and query_params.get('category') is not None:
         with allure.step('Verify provided category id with one in the response'):  
             assert category_id in json_filter_courses_by_category_data.get('results')[0].get('category')
+
+
+@allure.story('Courses list page')
+@allure.title('Sort courses by rating')
+def test_sort_courses_by_rating(base_api_url, access_token):
+    path = "/api/v1/courses/"
+        
+    with allure.step('Set query parameters with sort rating'):
+        query_params = {
+            'limit': 16,
+            'page': 1,
+            'ordering': 'rating'
+            }
+    
+    with allure.step('Retrieve the sorted courses list from the API'):
+        sorted_courses_by_category_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'): 
+        assert sorted_courses_by_category_response.status_code == 200
+    json_sorted_courses_by_category_data = sorted_courses_by_category_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_sorted_courses_by_category_data != {}
+    
+    if len(json_sorted_courses_by_category_data.get('results')) > 1 and json_sorted_courses_by_category_data.get('results')[-1].get('review_score') is not None:
+        first_course_rating = json_sorted_courses_by_category_data.get('results')[0].get('review_score')
+        last_course_rating = json_sorted_courses_by_category_data.get('results')[-1].get('review_score')
+        
+        with allure.step('Comparison rating of first and last courses'):
+            assert first_course_rating >= last_course_rating
