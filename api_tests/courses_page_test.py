@@ -147,3 +147,28 @@ def test_sort_courses_by_rating(base_api_url, access_token):
         
         with allure.step('Comparison rating of first and last courses'):
             assert first_course_rating >= last_course_rating
+
+
+@allure.story('Courses list page')
+@allure.title('Sort courses by popular')
+def test_sort_courses_by_popular(base_api_url, access_token):
+    path = "/api/v1/courses/"
+        
+    with allure.step('Set query parameters with sort popular'):
+        query_params = {
+            'limit': 16,
+            'page': 1,
+            'ordering': 'popular'
+            }
+    
+    with allure.step('Retrieve the sorted courses list from the API'):
+        sorted_courses_by_category_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'): 
+        assert sorted_courses_by_category_response.status_code == 200
+    json_sorted_courses_by_category_data = sorted_courses_by_category_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_sorted_courses_by_category_data != {}
+    
