@@ -6,11 +6,16 @@ import allure
 @allure.story('Courses list page')
 @allure.title('Retrieve the courses list')
 def test_courses_list(base_api_url, access_token):
-    courses_number = 16
-    path = f"/api/v1/courses/?limit={courses_number}&page=1"
+    path = "/api/v1/courses/"
+
+    with allure.step('Set query parameters'):
+        query_params = {
+            'limit': 16,
+            'page': 1,
+            }
 
     with allure.step('Retrieve the courses list from the API'):
-        courses_list_response = requests.get(url=base_api_url + path, 
+        courses_list_response = requests.get(url=base_api_url + path, params=query_params,
                                     headers={'Authorization': access_token.get('Authorization')})
     
     with allure.step('Check the 200 status response'):
@@ -20,9 +25,9 @@ def test_courses_list(base_api_url, access_token):
     with allure.step('Check whether the dictionary isnt blank in the response'):
         assert json_courses_list_data != {}
 
-    if int(json_courses_list_data.get('count')) >= courses_number:
+    if int(json_courses_list_data.get('count')) >= query_params.get('limit'):
         with allure.step('Check whether courses number correspond with provided number'):
-            assert len(json_courses_list_data.get('results')) == courses_number
+            assert len(json_courses_list_data.get('results')) == query_params.get('limit')
 
 
 @allure.story('Courses list page')
