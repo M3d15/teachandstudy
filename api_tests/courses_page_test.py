@@ -264,3 +264,32 @@ def test_filter_courses_by_referral(base_api_url, access_token):
                 assert json_filtered_courses_data.get('results')[0].get('is_active_referral') is True
             with allure.step('Verify the referral existance of the first course'):
                 assert json_filtered_courses_data.get('results')[-1].get('is_active_referral') is True
+
+
+@allure.story('Courses list page')
+@allure.title('Retrieve the top teachers list')
+def test_teachers_list(base_api_url, access_token):
+    path = "/api/v1/teachers/top-teachers/"
+
+    with allure.step('Retrieve the teachers list from the API'):
+        teachers_list_response = requests.get(url=base_api_url + path, 
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'):
+        assert teachers_list_response.status_code == 200
+    json_teachers_data = teachers_list_response.json()
+
+    if len(json_teachers_data) > 0:
+        with allure.step('Check whether the list isnt blank in the response'):
+            assert json_teachers_data != []
+
+    with allure.step('Check whether teachers number more than 0'):
+        if len(json_teachers_data) > 0:
+            with allure.step('Verify teachers data in the response'):
+                with allure.step('Verify first_name'):
+                    assert json_teachers_data[0].get('id')
+                with allure.step('Verify first_name'):
+                    assert json_teachers_data[0].get('first_name')
+                with allure.step('Verify last_name with one in the response'):
+                    assert json_teachers_data[0].get('last_name')
+        
