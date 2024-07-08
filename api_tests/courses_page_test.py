@@ -75,47 +75,6 @@ def test_courses_search(base_api_url, access_token):
             assert json_course_search_data.get('results')[0].get('name') == first_course_name
     else:
         print('Courses list is empty')
-    
-
-@allure.story('Courses list page')
-@allure.title('Filter courses by category')
-def test_filter_courses_by_category(base_api_url, access_token):
-    path = "/api/v1/courses/"
-
-    with allure.step('Retrieve the courses categories list from the API'):
-        course_categories_list_response = requests.get(url=base_api_url + "/api/v1/category/", 
-                                    headers={'Authorization': access_token.get('Authorization')}).json()
-    
-    with allure.step('Set base query parameters'):
-        query_params = {
-                        'limit': 16,
-                        'page': 1
-                        }
-        
-    with allure.step('Set query parameters with category id'):
-        if len(course_categories_list_response) > 0:
-            for object in course_categories_list_response:
-                if 'Сметное дело' in object.values():
-                    category_id = object.get('id')
-                    query_params = {
-                        'limit': 16,
-                        'page': 1,
-                        'category': category_id
-                        }
-    
-    with allure.step('Retrieve the filtered courses list from the API'):
-        filter_courses_by_category_response = requests.get(url=base_api_url + path, params=query_params,
-                                    headers={'Authorization': access_token.get('Authorization')})
-    
-    with allure.step('Check the 200 status response'): 
-        assert filter_courses_by_category_response.status_code == 200
-    json_filter_courses_by_category_data = filter_courses_by_category_response.json()
-    with allure.step('Check whether the dictionary isnt blank in the response'):
-        assert json_filter_courses_by_category_data != {}
-    
-    if len(json_filter_courses_by_category_data.get('results')) > 0 and query_params.get('category') is not None:
-        with allure.step('Verify provided category id with one in the response'):  
-            assert category_id in json_filter_courses_by_category_data.get('results')[0].get('category')
 
 
 @allure.story('Courses list page')
@@ -171,4 +130,76 @@ def test_sort_courses_by_popular(base_api_url, access_token):
     
     with allure.step('Check whether the dictionary isnt blank in the response'):
         assert json_sorted_courses_by_category_data != {}
+
+
+@allure.story('Courses list page')
+@allure.title('Filter courses by category')
+def test_filter_courses_by_category(base_api_url, access_token):
+    path = "/api/v1/courses/"
+
+    with allure.step('Retrieve the courses categories list from the API'):
+        course_categories_list_response = requests.get(url=base_api_url + "/api/v1/category/", 
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    
+    with allure.step('Set base query parameters'):
+        query_params = {
+                        'limit': 16,
+                        'page': 1
+                        }
+        
+    with allure.step('Set query parameters with category id'):
+        if len(course_categories_list_response) > 0:
+            for object in course_categories_list_response:
+                if 'Сметное дело' in object.values():
+                    category_id = object.get('id')
+                    query_params = {
+                        'limit': 16,
+                        'page': 1,
+                        'category': category_id
+                        }
+    
+    with allure.step('Retrieve the filtered courses list from the API'):
+        filter_courses_by_category_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'): 
+        assert filter_courses_by_category_response.status_code == 200
+    json_filter_courses_by_category_data = filter_courses_by_category_response.json()
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_filter_courses_by_category_data != {}
+    
+    if len(json_filter_courses_by_category_data.get('results')) > 0 and query_params.get('category') is not None:
+        with allure.step('Verify provided category id with one in the response'):  
+            assert category_id in json_filter_courses_by_category_data.get('results')[0].get('category')
+
+
+@allure.story('Courses list page')
+@allure.title('Filter courses by paid')
+def test_filter_courses_by_paid(base_api_url, access_token):
+    path = "/api/v1/courses/"
+        
+    with allure.step('Set query parameters with filter paid'):
+        query_params = {
+            'limit': 16,
+            'page': 1,
+            'price': 'paid'
+            }
+    
+    with allure.step('Retrieve the filtered courses list from the API'):
+        filtered_courses_by_paid_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'): 
+        assert filtered_courses_by_paid_response.status_code == 200
+    json_filtered_courses_data = filtered_courses_by_paid_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_filtered_courses_data != {}
+    
+    with allure.step('Check whether courses number  more than 0'):
+        if len(json_filtered_courses_data.get('results')) > 0:
+            with allure.step('Verify the first course price'):
+                assert json_filtered_courses_data.get('results')[0].get('price') > 0
+            with allure.step('Verify the last course price'):
+                assert json_filtered_courses_data.get('results')[-1].get('price') > 0
     
