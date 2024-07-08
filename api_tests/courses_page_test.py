@@ -233,3 +233,34 @@ def test_filter_courses_by_free(base_api_url, access_token):
                 assert json_filtered_courses_data.get('results')[0].get('price') == 0
             with allure.step('Verify the last course price'):
                 assert json_filtered_courses_data.get('results')[-1].get('price') == 0
+
+
+@allure.story('Courses list page')
+@allure.title('Filter courses by referral')
+def test_filter_courses_by_referral(base_api_url, access_token):
+    path = "/api/v1/courses/"
+        
+    with allure.step('Set query parameters with referral filter'):
+        query_params = {
+            'limit': 16,
+            'page': 1,
+            'price': 'referral'
+            }
+    
+    with allure.step('Retrieve the filtered courses list from the API'):
+        filtered_courses_by_referral_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'): 
+        assert filtered_courses_by_referral_response.status_code == 200
+    json_filtered_courses_data = filtered_courses_by_referral_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_filtered_courses_data != {}
+    
+    with allure.step('Check whether courses number more than 0'):
+        if len(json_filtered_courses_data.get('results')) > 0:
+            with allure.step('Verify the referral existance of the first course'):
+                assert json_filtered_courses_data.get('results')[0].get('is_active_referral') is True
+            with allure.step('Verify the referral existance of the first course'):
+                assert json_filtered_courses_data.get('results')[-1].get('is_active_referral') is True
