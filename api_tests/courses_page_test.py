@@ -273,7 +273,7 @@ def test_filter_courses_by_referral(base_api_url, access_token):
 
 @allure.story('Courses list page')
 @allure.title('Retrieve the top teachers list')
-def test_teachers_list(base_api_url, access_token):
+def test_top_teachers_list(base_api_url, access_token):
     path = "/api/v1/teachers/top-teachers/"
 
     with allure.step('Retrieve the teachers list from the API'):
@@ -291,7 +291,7 @@ def test_teachers_list(base_api_url, access_token):
     with allure.step('Check whether teachers number more than 0'):
         if len(json_teachers_data) > 0:
             with allure.step('Verify teachers data in the response'):
-                with allure.step('Verify first_name'):
+                with allure.step('Verify id'):
                     assert json_teachers_data[0].get('id')
                 with allure.step('Verify first_name'):
                     assert json_teachers_data[0].get('first_name')
