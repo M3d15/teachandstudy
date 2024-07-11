@@ -45,11 +45,9 @@ def test_teachers_list(base_api_url, access_token):
 
 
 @allure.story('Teachers list page')
-@allure.title('Teachers search')
-def test_teachers_search(base_api_url, access_token):
+@allure.title('Teachers search by name')
+def test_teachers_search_by_name(base_api_url, access_token):
     path = "/api/v1/teachers/"
-    teachers_data = {}
-    result_teachers_data = {}
     
     with allure.step('Retrieve the teachers list from the API'):
         teachers_list_response = requests.get(url=base_api_url + path,
@@ -57,31 +55,21 @@ def test_teachers_search(base_api_url, access_token):
     
     with allure.step('Check whether teachers number more than 0'):
         if len(teachers_list_response) > 0:
-            with allure.step('Get random number of the maximum number teacher in the list'):
+            with allure.step('Get random number of the maximum number of teachers in the list'):
                 random_number = random.randrange(len(teachers_list_response.get('results')))
             with allure.step('Retrieve first_name of the random teacher'):
-                teachers_data['first_name'] = teachers_list_response.get('results')[random_number].get('first_name')
-            with allure.step('Retrieve last_name of the random teacher'):
-                teachers_data['last_name'] = teachers_list_response.get('results')[random_number].get('last_name')
-            with allure.step('Check whether teacher has patronymic'):
-                if teachers_list_response.get('results')[random_number].get('patronymic'):
-                    teachers_data['patronymic'] = teachers_list_response.get('results')[random_number].get('patronymic')
+                teachers_name = teachers_list_response.get('results')[random_number].get('first_name')
     
-    for data in teachers_data.items():
-        key, value = data
-        with allure.step('Set query parameters'):
-            query_params = {
-                'page': 1,
-                'search': f"{value}"
-                }
+    with allure.step('Set query parameters'):
+        query_params = {
+            'page': 1,
+            'search': teachers_name
+            }
         
-        with allure.step('Retrieve the teachers search result from the API'):
-            teachers_search_response = requests.get(url=base_api_url + path, params=query_params,
-                                        headers={'Authorization': access_token.get('Authorization')})
-        json_teachers_search_data = teachers_search_response.json()
-
-        with allure.step('Form result teachers data'):
-            result_teachers_data[key] = json_teachers_search_data.get('results')[0].get(key)
+    with allure.step('Retrieve the teachers search result from the API'):
+        teachers_search_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    json_teachers_search_data = teachers_search_response.json()
         
     with allure.step('Check the 200 status response'):
         assert teachers_search_response.status_code == 200
@@ -90,16 +78,87 @@ def test_teachers_search(base_api_url, access_token):
         assert json_teachers_search_data != {}
     
     with allure.step('Check whether teachers number more than 0'):
-        if result_teachers_data.items():
+        if len(json_teachers_search_data.get('results')) > 0:
             with allure.step('Verify teachers data in the response'):
                 with allure.step('Verify teachers first_name'):
-                    assert result_teachers_data.get('first_name') == teachers_data.get('first_name')
-                
-                with allure.step('Verify teachers last_name'):
-                    assert result_teachers_data.get('last_name') == teachers_data.get('last_name')
+                    assert json_teachers_search_data.get('results')[0].get('first_name') == teachers_name
 
-                with allure.step('Check whether teacher has patronymic'):
-                    if result_teachers_data.get('patronymic'):
-                        with allure.step('Verify teachers patronymic'):
-                            assert result_teachers_data.get('patronymic') == teachers_data.get('patronymic')
-                        
+
+@allure.story('Teachers list page')
+@allure.title('Teachers search by last_name')
+def test_teachers_search_by_last_name(base_api_url, access_token):
+    path = "/api/v1/teachers/"
+    
+    with allure.step('Retrieve the teachers list from the API'):
+        teachers_list_response = requests.get(url=base_api_url + path,
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    
+    with allure.step('Check whether teachers number more than 0'):
+        if len(teachers_list_response) > 0:
+            with allure.step('Get random number of the maximum number of teachers in the list'):
+                random_number = random.randrange(len(teachers_list_response.get('results')))
+            with allure.step('Retrieve last_name of the random teacher'):
+                teachers_last_name = teachers_list_response.get('results')[random_number].get('last_name')
+    
+    with allure.step('Set query parameters'):
+        query_params = {
+            'page': 1,
+            'search': teachers_last_name
+            }
+        
+    with allure.step('Retrieve the teachers search result from the API'):
+        teachers_search_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    json_teachers_search_data = teachers_search_response.json()
+        
+    with allure.step('Check the 200 status response'):
+        assert teachers_search_response.status_code == 200
+    
+    with allure.step('Check whether the list isnt blank in the response'):
+        assert json_teachers_search_data != {}
+    
+    with allure.step('Check whether teachers number more than 0'):
+        if len(json_teachers_search_data.get('results')) > 0:
+            with allure.step('Verify teachers data in the response'):
+                with allure.step('Verify teachers last_name'):
+                    assert json_teachers_search_data.get('results')[0].get('last_name') == teachers_last_name
+
+
+@allure.story('Teachers list page')
+@allure.title('Teachers search by patronymic')
+def test_teachers_search_by_patronymic(base_api_url, access_token):
+    path = "/api/v1/teachers/"
+    
+    with allure.step('Retrieve the teachers list from the API'):
+        teachers_list_response = requests.get(url=base_api_url + path,
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    
+    with allure.step('Check whether teachers number more than 0'):
+        if len(teachers_list_response) > 0:
+            for data in teachers_list_response.get('results'):
+                if data.get('patronymic'):
+                    patronymic = data.get('patronymic')
+                    break
+    
+    with allure.step('Set query parameters'):
+        query_params = {
+            'page': 1,
+            'search': patronymic
+            }
+        
+    with allure.step('Retrieve the teachers search result from the API'):
+        teachers_search_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    json_teachers_search_data = teachers_search_response.json()
+        
+    with allure.step('Check the 200 status response'):
+        assert teachers_search_response.status_code == 200
+    
+    with allure.step('Check whether the list isnt blank in the response'):
+        assert json_teachers_search_data != {}
+    
+    with allure.step('Check whether teachers number more than 0'):
+        if len(json_teachers_search_data.get('results')) > 0:
+            with allure.step('Verify teachers data in the response'):
+                with allure.step('Verify teachers patronymic'):
+                    assert json_teachers_search_data.get('results')[0].get('patronymic') == patronymic
