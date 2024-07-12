@@ -179,7 +179,7 @@ def test_teachers_view(base_api_url, access_token):
     
     with allure.step('Check whether teachers number more than 0'):
         if len(teachers_list_response) > 0:
-            with allure.step('Get random number of the maximum number teacher in the list'):
+            with allure.step('Get random number of the maximum number of teachers in the list'):
                 random_number = random.randrange(len(teachers_list_response.get('results')))
             with allure.step('Retrieve teacher id from the random teacher'):
                 teacher_id = teachers_list_response.get('results')[random_number].get('id')
