@@ -204,7 +204,7 @@ def test_teachers_view(base_api_url, access_token):
         assert json_teachers_view_data != {}
     
     with allure.step('Verify teachers data in the response'):
-        with allure.step('Verify teachers patronymic'):
+        with allure.step('Verify teachers id'):
             assert json_teachers_view_data.get('id') == teacher_id
         
         with allure.step('Verify teachers first_name'):

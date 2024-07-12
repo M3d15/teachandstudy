@@ -32,7 +32,7 @@ def test_course_view(base_api_url, access_token):
         assert json_course_view_data != {}
 
     with allure.step('Verify course data in the response'):
-        with allure.step('Verify first_name'):
+        with allure.step('Verify id'):
             assert json_course_view_data.get('id')
         with allure.step('Verify first_name'):
             assert json_course_view_data.get('name')
