@@ -5,12 +5,10 @@ fake_us = Faker('en_US')
 fake_ru = Faker('ru_RU')
 Faker.seed()
 
-d = {}
+lst = [7]
+response_list = [1]
 
-d['name'] = 'Ivan'
-d['surname'] = 'Petrov'
-
-
-for i in d.items():
-    key, value = i
-    print(f'{key} = {value}')
+if response_list[0] in lst:
+    print('true')
+else:
+    print('false')
