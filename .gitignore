@@ -4,3 +4,4 @@ venv
 .pytest_cache
 allure_results
 trash.py
+file_for_test.py
