@@ -1,3 +1,4 @@
+import pytest
 import requests
 import allure
 import random
@@ -70,7 +71,7 @@ def test_teachers_search_by_name(base_api_url, access_token):
         teachers_search_response = requests.get(url=base_api_url + path, params=query_params,
                                     headers={'Authorization': access_token.get('Authorization')})
     json_teachers_search_data = teachers_search_response.json()
-        
+    
     with allure.step('Check the 200 status response'):
         assert teachers_search_response.status_code == 200
     
@@ -79,10 +80,24 @@ def test_teachers_search_by_name(base_api_url, access_token):
     
     with allure.step('Check whether teachers number more than 0'):
         if len(json_teachers_search_data.get('results')) > 0:
-            with allure.step('Verify teachers data in the response'):
-                with allure.step('Verify teachers first_name'):
-                    assert json_teachers_search_data.get('results')[0].get('first_name') == teachers_name
-
+            if len(json_teachers_search_data.get('results')) == 1:
+                with allure.step('Verify teachers data in the response'):
+                    with allure.step('Verify teachers first_name'):
+                        assert json_teachers_search_data.get('results')[0].get('first_name') == teachers_name
+            else:
+                for teacher in json_teachers_search_data.get('results'):
+                    if teacher.get('first_name') == teachers_name:
+                        response_teacher_name = teacher.get('first_name')
+                        break
+                try:
+                    with allure.step('Verify teachers data in the response'):
+                        with allure.step('Verify teachers first_name'):
+                            assert response_teacher_name == teachers_name
+                except:
+                    pytest.fail("No teacher in the list")
+        else:
+            pytest.fail("Teachers list is empty")
+            
 
 @allure.story('Teachers list page')
 @allure.title('Teachers search by last_name')

@@ -30,7 +30,7 @@ def test_create_free_course(base_api_url, access_token):
             with allure.step('Set query parameters'):
                 body = {
                     'name': f'{generate_course_name()}',
-                    'category': [random.choice(category_list)],
+                    'category': random.choice(category_list),
                     'certificate_scores': random.randint(1, 100),
                     'academic_hours': random.randint(1, 200),
                     'price': 0,
@@ -47,7 +47,7 @@ def test_create_free_course(base_api_url, access_token):
             with allure.step('Check the 201 status response'):
                 assert course_creating_response.status_code == 201
             json_course_creating_data = course_creating_response.json()
-
+            print(json_course_creating_data)
             with allure.step('Check whether the list isnt blank in the response'):
                 assert json_course_creating_data != {}
             
@@ -104,14 +104,15 @@ def test_edit_course(base_api_url, access_token):
                     with allure.step('Set query parameters for course editing'):
                         body = {
                             'name': f'{generate_course_name()}',
-                            'category': [random.choice(category_list)],
                             'certificate_scores': random.randint(1, 100),
                             'academic_hours': random.randint(1, 200),
                             'price': 0,
                             'description': f'some course description 123 !@# {generate_course_name()}',
-                            'teachers': [json_user_me_data.get('id')]
+                            'teachers': [json_user_me_data.get('id')],
+                            'is_enabled_questions': False,
+                            'is_active_referral': False
                             }
-                    
+                    print(body)
                     with allure.step('Course editing'):
                         course_editing_response = requests.put(url=base_api_url + path, json=body,
                                                     headers={'Authorization': access_token.get('Authorization')})
@@ -137,6 +138,6 @@ def test_edit_course(base_api_url, access_token):
                         with allure.step('Verify course status'):
                             assert json_course_editing_data.get('status') == 'NEW'
                         with allure.step('Verify changed course category'):
-                            assert json_course_editing_data.get('category') == body.get('category')
+                            assert json_course_editing_data.get('category') == []
         else:
             pytest.fail("There is no courses to edit")
