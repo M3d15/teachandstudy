@@ -97,7 +97,7 @@ def test_teachers_search_by_name(base_api_url, access_token):
                     pytest.fail("No teacher in the list")
         else:
             pytest.fail("Teachers list is empty")
-            
+
 
 @allure.story('Teachers list page')
 @allure.title('Teachers search by last_name')
@@ -131,12 +131,26 @@ def test_teachers_search_by_last_name(base_api_url, access_token):
     
     with allure.step('Check whether the list isnt blank in the response'):
         assert json_teachers_search_data != {}
-    
+
     with allure.step('Check whether teachers number more than 0'):
         if len(json_teachers_search_data.get('results')) > 0:
-            with allure.step('Verify teachers data in the response'):
-                with allure.step('Verify teachers last_name'):
-                    assert json_teachers_search_data.get('results')[0].get('last_name') == teachers_last_name
+            if len(json_teachers_search_data.get('results')) == 1:
+                with allure.step('Verify teachers data in the response'):
+                    with allure.step('Verify teachers last_name'):
+                        assert json_teachers_search_data.get('results')[0].get('last_name') == teachers_last_name
+            else:
+                for teacher in json_teachers_search_data.get('results'):
+                    if teacher.get('last_name') == teachers_last_name:
+                        response_teacher_name = teacher.get('last_name')
+                        break
+                try:
+                    with allure.step('Verify teachers data in the response'):
+                        with allure.step('Verify teachers last_name'):
+                            assert response_teacher_name == teachers_last_name
+                except:
+                    pytest.fail("No teacher in the list")
+        else:
+            pytest.fail("Teachers list is empty")
 
 
 @allure.story('Teachers list page')
