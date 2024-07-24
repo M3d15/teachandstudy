@@ -8,7 +8,7 @@ from ..api_tests.generator import generate_course_name
 @allure.story('Teaching page')
 @allure.title('Course creating')
 def test_create_free_course(base_api_url, access_token):
-    path = "/api/v1/courses/"
+    path = "/api/v1/teaching/courses/"
     category_list = []
 
     with allure.step('Retrieve users data from the API'):
@@ -26,11 +26,11 @@ def test_create_free_course(base_api_url, access_token):
                     category_list.append(object.get('id'))
                     if len(category_list) >= 10:
                         break
-
+        
             with allure.step('Set query parameters'):
                 body = {
                     'name': f'{generate_course_name()}',
-                    'category': random.choice(category_list),
+                    'category': [random.choice(category_list)],
                     'certificate_scores': random.randint(1, 100),
                     'academic_hours': random.randint(1, 200),
                     'price': 0,
@@ -39,7 +39,7 @@ def test_create_free_course(base_api_url, access_token):
                     'is_active_referral': False,
                     'teachers': [json_user_me_data.get('id')]
                     }
-
+            
             with allure.step('Course creating'):
                 course_creating_response = requests.post(url=base_api_url + path, json=body,
                                             headers={'Authorization': access_token.get('Authorization')})
@@ -47,7 +47,7 @@ def test_create_free_course(base_api_url, access_token):
             with allure.step('Check the 201 status response'):
                 assert course_creating_response.status_code == 201
             json_course_creating_data = course_creating_response.json()
-            print(json_course_creating_data)
+            # print(json_course_creating_data)
             with allure.step('Check whether the list isnt blank in the response'):
                 assert json_course_creating_data != {}
             
@@ -99,20 +99,21 @@ def test_edit_course(base_api_url, access_token):
                             if len(category_list) >= 10:
                                 break
                     
-                    path = f"/api/v1/courses/{json_course_list_data.get('results')[-1].get('id')}/"
+                    path = f"/api/v1/teaching/courses/{json_course_list_data.get('results')[-1].get('id')}/"
 
                     with allure.step('Set query parameters for course editing'):
                         body = {
                             'name': f'{generate_course_name()}',
                             'certificate_scores': random.randint(1, 100),
                             'academic_hours': random.randint(1, 200),
+                            'category': [],
                             'price': 0,
                             'description': f'some course description 123 !@# {generate_course_name()}',
                             'teachers': [json_user_me_data.get('id')],
                             'is_enabled_questions': False,
                             'is_active_referral': False
                             }
-                    print(body)
+                    
                     with allure.step('Course editing'):
                         course_editing_response = requests.put(url=base_api_url + path, json=body,
                                                     headers={'Authorization': access_token.get('Authorization')})
