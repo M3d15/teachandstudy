@@ -6,6 +6,33 @@ from ..api_tests.generator import generate_course_name
 
 
 @allure.story('Teaching page')
+@allure.title('Retrieve the users teaching courses list')
+def test_users_teaching_courses_list(base_api_url, access_token):
+    path = "/api/v1/courses/teacher/"
+
+    with allure.step('Set query parameters'):
+        query_params = {
+            'limit': 12,
+            'page': 1,
+            }
+
+    with allure.step('Retrieve the courses list from the API'):
+        courses_list_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'):
+        assert courses_list_response.status_code == 200
+    json_courses_list_data = courses_list_response.json()
+
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_courses_list_data != {}
+    
+    if int(json_courses_list_data.get('count')) >= query_params.get('limit'):
+        with allure.step('Check whether courses number correspond with provided number'):
+            assert len(json_courses_list_data.get('results')) == query_params.get('limit')
+
+
+@allure.story('Teaching page')
 @allure.title('Free course creating')
 def test_create_free_course(base_api_url, access_token):
     path = "/api/v1/teaching/courses/"
