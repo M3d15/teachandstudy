@@ -6,8 +6,8 @@ from ..api_tests.generator import generate_course_name
 
 
 @allure.story('Teaching page')
-@allure.title('Retrieve the users teaching courses list')
-def test_users_teaching_courses_list(base_api_url, access_token):
+@allure.title('Retrieve the teaching courses list')
+def test_teaching_courses_list(base_api_url, access_token):
     path = "/api/v1/courses/teacher/"
 
     with allure.step('Set query parameters'):
