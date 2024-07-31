@@ -6,33 +6,6 @@ from ..api_tests.generator import generate_course_name
 
 
 @allure.story('Teaching page')
-@allure.title('Retrieve the teaching courses list')
-def test_teaching_courses_list(base_api_url, access_token):
-    path = "/api/v1/courses/teacher/"
-
-    with allure.step('Set query parameters'):
-        query_params = {
-            'limit': 12,
-            'page': 1,
-            }
-
-    with allure.step('Retrieve the courses list from the API'):
-        courses_list_response = requests.get(url=base_api_url + path, params=query_params,
-                                    headers={'Authorization': access_token.get('Authorization')})
-    
-    with allure.step('Check the 200 status response'):
-        assert courses_list_response.status_code == 200
-    json_courses_list_data = courses_list_response.json()
-
-    with allure.step('Check whether the dictionary isnt blank in the response'):
-        assert json_courses_list_data != {}
-    
-    if int(json_courses_list_data.get('count')) >= query_params.get('limit'):
-        with allure.step('Check whether courses number correspond with provided number'):
-            assert len(json_courses_list_data.get('results')) == query_params.get('limit')
-
-
-@allure.story('Teaching page')
 @allure.title('Free course creating')
 def test_create_free_course(base_api_url, access_token):
     path = "/api/v1/teaching/courses/"
@@ -438,7 +411,7 @@ def test_create_legal_entity_paid_course(base_api_url, access_token):
                     if len(category_list) >= 10:
                         break
         
-            with allure.step('Set query parameters'):
+            with allure.step('Set request body'):
                 body = {
                     'name': f'{generate_course_name()} for Legal entity',
                     'category': [random.choice(category_list)],
@@ -505,6 +478,33 @@ def test_create_legal_entity_paid_course(base_api_url, access_token):
 
 
 @allure.story('Teaching page')
+@allure.title('Retrieve the teaching courses list')
+def test_teaching_courses_list(base_api_url, access_token):
+    path = "/api/v1/courses/teacher/"
+
+    with allure.step('Set query parameters'):
+        query_params = {
+            'limit': 12,
+            'page': 1,
+            }
+
+    with allure.step('Retrieve the courses list from the API'):
+        courses_list_response = requests.get(url=base_api_url + path, params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')})
+    
+    with allure.step('Check the 200 status response'):
+        assert courses_list_response.status_code == 200
+    json_courses_list_data = courses_list_response.json()
+
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_courses_list_data != {}
+    
+    if int(json_courses_list_data.get('count')) >= query_params.get('limit'):
+        with allure.step('Check whether courses number correspond with provided number'):
+            assert len(json_courses_list_data.get('results')) == query_params.get('limit')
+
+
+@allure.story('Teaching page')
 @allure.title('Viewing a course from the teachers side')
 def test_teaching_view_course(base_api_url, access_token):
     path = '/api/v1/teaching/courses/'
@@ -519,7 +519,7 @@ def test_teaching_view_course(base_api_url, access_token):
         json_courses_list_data = requests.get(url=base_api_url + "/api/v1/courses/teacher/", params=query_params,
                                     headers={'Authorization': access_token.get('Authorization')}).json()
     
-    with allure.step('Check whether number courses list > 0'):
+    with allure.step('Check whether courses number in the list > 0'):
         if len(json_courses_list_data.get('results')) > 0:
             with allure.step('Get a random course from the list'):
                 random_course = random.choice(json_courses_list_data.get('results'))
@@ -547,3 +547,52 @@ def test_teaching_view_course(base_api_url, access_token):
         else:
             pytest.fail("There are no courses to view")
     
+
+@allure.story('Teaching page')
+@allure.title('Create a course section')
+def test_teaching_create_course_section(base_api_url, access_token):
+    path = '/api/v1/courses/'
+
+    with allure.step('Set query parameters'):
+        query_params = {
+            'limit': 12,
+            'page': 1,
+            }
+
+    with allure.step('Retrieve the teacher courses list from the API'):
+        json_courses_list_data = requests.get(url=base_api_url + "/api/v1/courses/teacher/", params=query_params,
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    
+    with allure.step('Check whether courses number in the list > 0'):
+        if len(json_courses_list_data.get('results')) > 0:
+            with allure.step('Get a random course from the list'):
+                random_course = random.choice(json_courses_list_data.get('results'))
+            
+            with allure.step('Set request body'):
+                body = {
+                        'name': f'Section {random.randint(1,100)}',
+                        'number': random.randint(1,100)
+                        }
+
+            with allure.step('Retrieve the course data from the API'):
+                create_section_response = requests.post(url=f'{base_api_url}{path}{random_course.get('id')}/sections/', json=body,
+                                            headers={'Authorization': access_token.get('Authorization')}).json()
+            print(create_section_response)
+            # with allure.step('Check the 200 status response'):
+            #     assert view_course_response.status_code == 200
+            # json_view_course_data = view_course_response.json()
+            
+            # with allure.step('Check whether the dictionary isnt blank in the response'):
+            #     assert json_view_course_data != {}
+
+            # with allure.step('Verify course data in the response'):
+            #     with allure.step('Verify course id'):
+            #         assert json_view_course_data.get('id') == random_course.get('id')
+            #     with allure.step('Verify course name'):
+            #         assert json_view_course_data.get('name') == random_course.get('name')
+            #     with allure.step('Verify course certificate_scores'):
+            #         assert json_view_course_data.get('certificate_scores') == random_course.get('certificate_scores')
+            #     with allure.step('Verify course academic_hours'):
+            #         assert json_view_course_data.get('academic_hours') == random_course.get('academic_hours')
+        else:
+            pytest.fail("There are no courses to create a section")
