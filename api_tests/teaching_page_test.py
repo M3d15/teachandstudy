@@ -576,23 +576,28 @@ def test_teaching_create_course_section(base_api_url, access_token):
 
             with allure.step('Retrieve the course data from the API'):
                 create_section_response = requests.post(url=f'{base_api_url}{path}{random_course.get('id')}/sections/', json=body,
-                                            headers={'Authorization': access_token.get('Authorization')}).json()
-            print(create_section_response)
-            # with allure.step('Check the 200 status response'):
-            #     assert view_course_response.status_code == 200
-            # json_view_course_data = view_course_response.json()
+                                            headers={'Authorization': access_token.get('Authorization')})
             
-            # with allure.step('Check whether the dictionary isnt blank in the response'):
-            #     assert json_view_course_data != {}
+            with allure.step('If status 400 = resend the request'):
+                while create_section_response.status_code == 400:
+                    body = {
+                            'name': f'Section {random.randint(1,10000)}',
+                            'number': random.randint(1,10000)
+                            }
+                    create_section_response = requests.post(url=f'{base_api_url}{path}{random_course.get('id')}/sections/', json=body,
+                                                headers={'Authorization': access_token.get('Authorization')})
+                
+            with allure.step('Check the 201 status response'):
+                assert create_section_response.status_code == 201
+            json_create_section_data = create_section_response.json()
+            
+            with allure.step('Check whether the dictionary isnt blank in the response'):
+                assert json_create_section_data != {}
 
-            # with allure.step('Verify course data in the response'):
-            #     with allure.step('Verify course id'):
-            #         assert json_view_course_data.get('id') == random_course.get('id')
-            #     with allure.step('Verify course name'):
-            #         assert json_view_course_data.get('name') == random_course.get('name')
-            #     with allure.step('Verify course certificate_scores'):
-            #         assert json_view_course_data.get('certificate_scores') == random_course.get('certificate_scores')
-            #     with allure.step('Verify course academic_hours'):
-            #         assert json_view_course_data.get('academic_hours') == random_course.get('academic_hours')
+            with allure.step('Verify course section data in the response'):
+                with allure.step('Verify section name'):
+                    assert json_create_section_data.get('name') == body.get('name')
+                with allure.step('Verify section number'):
+                    assert json_create_section_data.get('number') == body.get('number')
         else:
             pytest.fail("There are no courses to create a section")
