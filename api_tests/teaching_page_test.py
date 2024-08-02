@@ -10,7 +10,7 @@ This fixture needs to create a free course to reuse its values in other tests
 
 """
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def free_course(base_api_url, access_token):
     path = "/api/v1/teaching/courses/"
     category_list = []
@@ -617,10 +617,11 @@ def test_teaching_view_course(base_api_url, access_token):
 
 @allure.story('Teaching page')
 @allure.title('Create a course section')
+@pytest.mark.sections
 def test_teaching_create_course_section(base_api_url, access_token, free_course):
     path = '/api/v1/courses/'
     max_retries = 5
-
+    
     with allure.step('Check whether the course exists'):    
         if not free_course:
             pytest.fail("There is no course to create a section")
@@ -652,3 +653,51 @@ def test_teaching_create_course_section(base_api_url, access_token, free_course)
         with allure.step('Verify section number'):
             assert json_create_section_data.get('number') == body.get('number')
         
+
+@allure.story('Teaching page')
+@allure.title('Edit a course section')
+@pytest.mark.sections
+def test_teaching_edit_course_section(base_api_url, access_token, free_course):
+    path = '/api/v1/courses/'
+    max_retries = 5
+
+    with allure.step('Check whether the course exists'):    
+        if not free_course:
+            pytest.fail("There is no course to create a section")
+    
+    with allure.step('Retrieve the course data from the API'):
+        view_course_response = requests.get(url=f'{base_api_url}/api/v1/teaching/courses/{free_course.get('id')}/',
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    print(view_course_response)
+    if view_course_response.get('composition'):
+        for retry in range(max_retries):
+            with allure.step('Set request body'):
+                body = {
+                    'id': view_course_response.get('composition')[-1].get('id'),
+                    'name': f'Chanded section {random.randint(1, 10000)}',
+                    'number': random.randint(1, 10000)
+                }
+            
+            with allure.step('Retrieve the changed course section data from the API'):
+                edit_section_response = requests.put(url=f'{base_api_url}{path}{free_course.get('id')}/sections/{view_course_response.get('composition')[-1].get('id')}/', 
+                                                     json=body, headers={'Authorization': access_token.get('Authorization')})
+                
+            if edit_section_response != 400:
+                break
+    else:
+        pytest.fail("There is no sections to edit")
+                
+    with allure.step('Check the 200 status response'):
+        assert edit_section_response.status_code == 200, f'Got {edit_section_response.status_code}'
+    json_edit_section_data = edit_section_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_edit_section_data != {}
+
+    with allure.step('Verify course section data in the response'):
+        with allure.step('Verify section id'):
+            assert json_edit_section_data.get('id') == body.get('id')
+        with allure.step('Verify section name'):
+            assert json_edit_section_data.get('name') == body.get('name')
+        with allure.step('Verify section number'):
+            assert json_edit_section_data.get('number') == body.get('number')

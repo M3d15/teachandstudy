@@ -2,12 +2,12 @@ import pytest
 import requests
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def credentials():
     return {"username": "test@ya.ru", "password": "1qwe2qaz"}
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def access_token(base_api_url, credentials):
     path = "/api/v1/auth/jwt/create/"
     token_response = requests.post(url=base_api_url + path, json=credentials,
@@ -19,6 +19,6 @@ def access_token(base_api_url, credentials):
     return {"Authorization": f"Bearer {json_token_data.get('access')}"}
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def base_api_url():
     return "https://tastest.pelikan.online"
