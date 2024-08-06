@@ -636,8 +636,8 @@ def test_teaching_create_course_section(base_api_url, access_token, free_course)
         with allure.step('Retrieve the course section data from the API'):
             create_section_response = requests.post(url=f'{base_api_url}{path}{free_course.get('id')}/sections/', json=body,
                                         headers={'Authorization': access_token.get('Authorization')})
-            
-        if create_section_response != 400:
+        
+        if create_section_response.status_code == 201:
             break
                 
     with allure.step('Check the 201 status response'):
@@ -656,7 +656,6 @@ def test_teaching_create_course_section(base_api_url, access_token, free_course)
 
 @allure.story('Teaching page')
 @allure.title('Edit a course section')
-@pytest.mark.sections
 def test_teaching_edit_course_section(base_api_url, access_token, free_course):
     path = '/api/v1/courses/'
     max_retries = 5
@@ -666,23 +665,23 @@ def test_teaching_edit_course_section(base_api_url, access_token, free_course):
             pytest.fail("There is no course to create a section")
     
     with allure.step('Retrieve the course data from the API'):
-        view_course_response = requests.get(url=f'{base_api_url}/api/v1/teaching/courses/{free_course.get('id')}/',
+        json_view_course_data = requests.get(url=f'{base_api_url}/api/v1/teaching/courses/{free_course.get('id')}/',
                                     headers={'Authorization': access_token.get('Authorization')}).json()
-    print(view_course_response)
-    if view_course_response.get('composition'):
+    
+    if json_view_course_data.get('composition'):
         for retry in range(max_retries):
             with allure.step('Set request body'):
                 body = {
-                    'id': view_course_response.get('composition')[-1].get('id'),
+                    'id': json_view_course_data.get('composition')[-1].get('id'),
                     'name': f'Chanded section {random.randint(1, 10000)}',
                     'number': random.randint(1, 10000)
                 }
             
             with allure.step('Retrieve the changed course section data from the API'):
-                edit_section_response = requests.put(url=f'{base_api_url}{path}{free_course.get('id')}/sections/{view_course_response.get('composition')[-1].get('id')}/', 
+                edit_section_response = requests.put(url=f'{base_api_url}{path}{free_course.get('id')}/sections/{json_view_course_data.get('composition')[-1].get('id')}/', 
                                                      json=body, headers={'Authorization': access_token.get('Authorization')})
-                
-            if edit_section_response != 400:
+            
+            if edit_section_response.status_code == 200:
                 break
     else:
         pytest.fail("There is no sections to edit")
@@ -701,3 +700,66 @@ def test_teaching_edit_course_section(base_api_url, access_token, free_course):
             assert json_edit_section_data.get('name') == body.get('name')
         with allure.step('Verify section number'):
             assert json_edit_section_data.get('number') == body.get('number')
+
+
+@allure.story('Teaching page')
+@allure.title('Create a course TXT lecture with txt file as material')
+@pytest.mark.lectures
+def test_teaching_create_course_txt_lecture(base_api_url, access_token, free_course):
+    path = '/api/v1/teaching/courses/'
+    file_path = 'C:/VScode/tes/txt_file_test.txt'
+    max_retries = 5
+    
+    with allure.step('Check whether the course exists'):    
+        if not free_course:
+            pytest.fail("There is no course to create a lecture")
+
+    with allure.step('Retrieve the course data from the API'):
+        json_view_course_data = requests.get(url=f'{base_api_url}/api/v1/teaching/courses/{free_course.get('id')}/',
+                                    headers={'Authorization': access_token.get('Authorization')}).json()
+    
+    if json_view_course_data.get('composition'):
+        for retry in range(max_retries):
+            with allure.step('Set the request body'):
+                body = {
+                    'name': f'Lecture name {random.randint(1, 10000)}',
+                    'number': random.randint(1, 10000),
+                    'type': 'TXT',
+                    'section': json_view_course_data.get('composition')[-1].get('id'),
+                    'course': free_course.get('id'),
+                    'content': 'Lecture description'
+                }
+            
+            with allure.step('Retrieve the course TXT lecture data from the API'):
+                with open(file_path, 'rb') as f:
+                    files = {'material_file': f}
+                    create_course_txt_lecture_response = requests.post(url=f'{base_api_url}{path}{free_course.get('id')}/lectures/', files=files,
+                                                        data=body, headers={'Authorization': access_token.get('Authorization')})
+            
+            if create_course_txt_lecture_response.status_code == 201:
+                break
+    else:
+        pytest.fail("There is no sections to create the lecture")
+                
+    with allure.step('Check the 201 status response'):
+        assert create_course_txt_lecture_response.status_code == 201
+    json_create_lecture_data = create_course_txt_lecture_response.json()
+    
+    with allure.step('Check whether the dictionary isnt blank in the response'):
+        assert json_create_lecture_data != {}
+
+    with allure.step('Verify the course lecture data in the response'):
+        with allure.step('Verify the lecture name'):
+            assert json_create_lecture_data.get('name') == body.get('name')
+        with allure.step('Verify the lecture number'):
+            assert json_create_lecture_data.get('number') == body.get('number')
+        with allure.step('Verify the lecture type'):
+            assert json_create_lecture_data.get('type') == body.get('type')
+        with allure.step('Verify the lecture section'):
+            assert json_create_lecture_data.get('section') == body.get('section')
+        with allure.step('Verify the lecture course'):
+            assert json_create_lecture_data.get('course') == body.get('course')
+        with allure.step('Verify the lecture uploaded file'):
+            assert json_create_lecture_data.get('material_file')
+        with allure.step('Verify the lecture uploaded file URL'):
+            assert json_create_lecture_data.get('material')
